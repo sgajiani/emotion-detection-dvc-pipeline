@@ -1,0 +1,43 @@
+stages:
+  make_dataset:
+    cmd: python src/data/make_dataset.py
+    deps:
+    - src/data/make_dataset.py
+    - data/external/tweet_emotions.csv
+    params:
+    - make_dataset.test_size
+    outs:
+    - data/raw
+  preprocess_data:
+    cmd: python src/data/preprocess_data.py
+    deps:
+    - data/raw
+    - src/data/preprocess_data.py
+    outs:
+    - data/processed
+  build_features:
+    cmd: python src/features/build_features.py
+    deps:
+    - data/processed
+    - src/features/build_features.py
+    params:
+    - build_features.max_features
+    outs:
+    - data/features
+  train_model:
+    cmd: python src/models/train_model.py
+    deps:
+    - data/features
+    - src/models/train_model.py
+    params:
+    - train_model.n_estimators
+    - train_model.learning_rate
+    outs:
+    - models/gbc.pkl
+  predict_model:
+    cmd: python src/models/predict_model.py
+    deps:
+    - models/gbc.pkl
+    - src/models/predict_model.py
+    metrics:
+    - reports/metrics.json

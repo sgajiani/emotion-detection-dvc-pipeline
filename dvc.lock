@@ -1,0 +1,98 @@
+schema: '2.0'
+stages:
+  make_dataset:
+    cmd: python src/data/make_dataset.py
+    deps:
+    - path: data/external/tweet_emotions.csv
+      hash: md5
+      md5: 378e50a49c97277f1841a684687c2020
+      size: 3768210
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: 45983f842af23e497e3ab022c41e05c2
+      size: 3554
+    params:
+      params.yaml:
+        make_dataset.test_size: 0.4
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 106c38725190ad2e4bab6fa291b592a8.dir
+      size: 827973
+      nfiles: 2
+  preprocess_data:
+    cmd: python src/data/preprocess_data.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 106c38725190ad2e4bab6fa291b592a8.dir
+      size: 827973
+      nfiles: 2
+    - path: src/data/preprocess_data.py
+      hash: md5
+      md5: 8b89837b508b276f3e322db6a6d3ab43
+      size: 6052
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 1be45c879abb1b22ef8c6c4d3769160a.dir
+      size: 684272
+      nfiles: 2
+  build_features:
+    cmd: python src/features/build_features.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 1be45c879abb1b22ef8c6c4d3769160a.dir
+      size: 684272
+      nfiles: 2
+    - path: src/features/build_features.py
+      hash: md5
+      md5: e482f5e1b3233a710b5e5bd5c72bcff8
+      size: 5106
+    params:
+      params.yaml:
+        build_features.max_features: 300
+    outs:
+    - path: data/features
+      hash: md5
+      md5: 4d570ef1f077cf3d73cfe76fdb15905c.dir
+      size: 7508338
+      nfiles: 2
+  train_model:
+    cmd: python src/models/train_model.py
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 4d570ef1f077cf3d73cfe76fdb15905c.dir
+      size: 7508338
+      nfiles: 2
+    - path: src/models/train_model.py
+      hash: md5
+      md5: eb2cfd3688ae597bb400cd36f20fe8b1
+      size: 3066
+    params:
+      params.yaml:
+        train_model.learning_rate: 0.01
+        train_model.n_estimators: 30
+    outs:
+    - path: models/gbc.pkl
+      hash: md5
+      md5: d56f0908ee0ddcbbf526a8e17c0475fd
+      size: 43901
+  predict_model:
+    cmd: python src/models/predict_model.py
+    deps:
+    - path: models/gbc.pkl
+      hash: md5
+      md5: d56f0908ee0ddcbbf526a8e17c0475fd
+      size: 43901
+    - path: src/models/predict_model.py
+      hash: md5
+      md5: 5a40328211a74467f18cc5b98048f70b
+      size: 3133
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: 7dbf69032b5815d6f04105fa3e4317d8
+      size: 145
