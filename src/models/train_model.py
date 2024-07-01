@@ -90,7 +90,7 @@ def main():
     n_estimators, learning_rate = load_params('params.yaml')
 
     vectorized_data_path = os.path.join("data", "features")
-    train_datapath = os.path.join(vectorized_data_path, "train_bow.csv")
+    train_datapath = os.path.join(vectorized_data_path, "train_tfidf.csv")
     
     df_train = read_train_data(train_datapath)
 

@@ -80,7 +80,7 @@ def evaluate_model(y_test: np.ndarray, y_pred: np.ndarray, y_pred_proba: np.ndar
 
 def main():
     vectorized_data_path = os.path.join("data", "features")
-    test_datapath = os.path.join(vectorized_data_path, "test_bow.csv")
+    test_datapath = os.path.join(vectorized_data_path, "test_tfidf.csv")
 
     df_test = read_test_data(test_datapath)
 

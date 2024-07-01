@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import yaml
 import logging
 from typing import Tuple
@@ -94,15 +94,15 @@ def split_data(train_processed_data: pd.DataFrame, test_processed_data: pd.DataF
 def vectorize_data(X_train: np.ndarray, X_test: np.ndarray, max_features: int) -> Tuple[np.ndarray, np.ndarray]:
     try:
         # Apply Bag of Words 
-        vectorizer = CountVectorizer(max_features=max_features)
+        vectorizer = TfidfVectorizer(max_features=max_features)
 
         # Fit the vectorizer to training data nd transform
-        X_train_bow = vectorizer.fit_transform(X_train)
+        X_train_vec = vectorizer.fit_transform(X_train)
 
         # Transform the test data
-        X_test_bow = vectorizer.transform(X_test)
+        X_test_vec = vectorizer.transform(X_test)
 
-        return X_train_bow, X_test_bow
+        return X_train_vec, X_test_vec
     
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
@@ -110,13 +110,13 @@ def vectorize_data(X_train: np.ndarray, X_test: np.ndarray, max_features: int) -
     
 
 
-def save_vectorized_data(df_train_bow: pd.DataFrame, df_test_bow: pd.DataFrame, data_path: str) -> None:
+def save_vectorized_data(df_train_vec: pd.DataFrame, df_test_vec: pd.DataFrame, data_path: str) -> None:
     try:
         
         os.makedirs(data_path, exist_ok=True)
 
-        df_train_bow.to_csv(os.path.join(data_path, "train_bow.csv"), index=False)
-        df_test_bow.to_csv(os.path.join(data_path, "test_bow.csv"), index=False)
+        df_train_vec.to_csv(os.path.join(data_path, "train_tfidf.csv"), index=False)
+        df_test_vec.to_csv(os.path.join(data_path, "test_tfidf.csv"), index=False)
 
     except PermissionError:
         logger.error(f"Error: Permission denied while creating directory {data_path}.")
@@ -138,17 +138,17 @@ def main():
 
     X_train, X_test, y_train, y_test = split_data(train_processed_data, test_processed_data)
 
-    X_train_bow, X_test_bow = vectorize_data(X_train, X_test, max_features)
+    X_train_vec, X_test_vec = vectorize_data(X_train, X_test, max_features)
 
     # Combine X and y to create a df
-    df_train_bow = pd.DataFrame(X_train_bow.toarray())
-    df_train_bow['label'] = y_train
+    df_train_vec = pd.DataFrame(X_train_vec.toarray())
+    df_train_vec['label'] = y_train
 
-    df_test_bow = pd.DataFrame(X_test_bow.toarray())
-    df_test_bow['label'] = y_test
+    df_test_vec = pd.DataFrame(X_test_vec.toarray())
+    df_test_vec['label'] = y_test
 
     vectorized_data_path = os.path.join("data", "features")
-    save_vectorized_data(df_train_bow, df_test_bow, data_path=vectorized_data_path)
+    save_vectorized_data(df_train_vec, df_test_vec, data_path=vectorized_data_path)
 
 
 if __name__ == '__main__':
