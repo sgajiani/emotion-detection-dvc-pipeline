@@ -6,6 +6,8 @@ import os
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score
 import logging
 from typing import Tuple
+import yaml
+from dvclive import Live
 
 # configure logging
 logger = logging.getLogger('predict_model')
@@ -77,6 +79,20 @@ def evaluate_model(y_test: np.ndarray, y_pred: np.ndarray, y_pred_proba: np.ndar
         logger.error(f"An unexpected error occurred: {e}")
 
 
+def log_params_metrics(param_path, accuracy, precision, recall, auc):
+    with open(param_path, 'r') as file:
+        params = yaml.safe_load(file)
+
+    with Live(save_dvc_exp=True) as live:
+        live.log_metric('accuracy', accuracy)
+        live.log_metric('precision', precision)
+        live.log_metric('recall', recall)
+        live.log_metric('auc', auc)
+
+        for param, value in params.items():
+            for key, val in value.items():
+                live.log_param(f'{param}_{key}', val)
+
 
 def main():
     vectorized_data_path = os.path.join("data", "features")
@@ -90,6 +106,8 @@ def main():
     y_pred, y_pred_proba = predict(X_test)
 
     accuracy, precision, recall, auc = evaluate_model(y_test, y_pred, y_pred_proba)
+
+    log_params_metrics(param_path='params.yaml', accuracy=accuracy, precision=precision, recall=recall, auc=auc)
 
     # create metrics json file
     metrics_dict = {
